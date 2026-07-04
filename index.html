@@ -584,16 +584,18 @@ async function init(){
 
   // fetch schedule + todo in parallel
   try{
-    const [schedRes, todoRes] = await Promise.all([
-      fetch(CSV),
-      fetch(TODO_CSV)
-    ]);
-    const schedTxt = await schedRes.text();
-    const todoTxt  = await todoRes.text();
+    const schedRes = await fetch(CSV);
+  const schedTxt = await schedRes.text();
+  rows = parseCSV(schedTxt);
 
-    rows = parseCSV(schedTxt);
-    todoRows = parseTodoCSV(todoTxt);
-
+  // 투두는 실패해도 스케줄은 보이도록 분리
+  fetch(TODO_CSV)
+    .then(r=>r.text())
+    .then(t=>{ todoRows=parseTodoCSV(t); renderTodo(); })
+    .catch(()=>{ 
+      document.getElementById('td-body').innerHTML=
+        '<div style="padding:14px;text-align:center;font-size:12px;color:#6B7280">투두 시트 연결 확인 필요</div>';
+    });
     const todayHasData=rows.some(r=>r['날짜']===today);
     if(!todayHasData){
       const first=rows.find(r=>{const d=pd(r['날짜']);return d&&d.getMonth()+1===curMonth});
