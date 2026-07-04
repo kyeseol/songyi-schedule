@@ -133,10 +133,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .todo-body{border-top:1px solid var(--border)}
 .todo-item{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)}
 .todo-item:last-child{border-bottom:none}
+.todo-item.overdue{background:#FFF5F5}
+.todo-item.urgent{background:#FFFBEB}
 .chk{width:18px;height:18px;min-width:18px;border:2px solid var(--border);border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;margin-top:1px;transition:.1s}
 .chk.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.td-info{flex:1;display:flex;flex-direction:column;gap:3px}
 .td-txt{font-size:12px;color:var(--text);line-height:1.5}
 .td-txt.done{text-decoration:line-through;color:var(--text2)}
+.td-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.td-date{font-size:10px;color:var(--text2)}
+.td-badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;white-space:nowrap}
+.bd-overdue{background:#FEE2E2;color:#DC2626}
+.bd-urgent{background:#FEF3C7;color:#D97706}
+.bd-ok{background:#DCFCE7;color:#16A34A}
+.bd-high{background:var(--pur-bg);color:var(--pur)}
+.bd-normal{background:var(--gry-bg);color:var(--gry)}
+.todo-loading{padding:16px;text-align:center;font-size:12px;color:var(--text2)}
 
 /* ── MODAL ── */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -266,25 +278,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <script>
 /* ── CONFIG ── */
 const CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1Cy4kRvzvFMeizNn4BtPLpQ0OEUXNNDnJai-d9C57qX5wJNSv6fR0yBAYcindtQa2CJxplZ-wIVzb/pub?output=csv';
+const TODO_CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1Cy4kRvzvFMeizNn4BtPLpQ0OEUXNNDnJai-d9C57qX5wJNSv6fR0yBAYcindtQa2CJxplZ-wIVzb/pub?gid=263883370&single=true&output=csv';
 const GAS='https://script.google.com/macros/s/AKfycbz8mdQ0BB_1yRFHZHLdv-IdJ-jqU2KyIySvXq5Ac55eApBrhQVm0YTP89ETcnak9rx6/exec';
-const SK='songyi_v3'; const TK='songyi_td_v1';
-
-const TODOS=[
-  {id:'t1',text:'미술 선생님께 일요일 수업 시간 변경 최종 확인'},
-  {id:'t2',text:'바이올린 선생님께 8/4 5시 수업 가능 여부 문의'},
-  {id:'t3',text:'스케이트 교실 — 8월 장비 보관 연락'},
-  {id:'t4',text:'국어 학원 시간표 확인 후 목요일 슬롯 검토'},
-  {id:'t5',text:'논리정연 8/6 초과분(1회) 추가 결제 확인'},
-];
+const SK='songyi_v3'; const TDK='songyi_td_v2';
 
 /* ── STATE ── */
-let rows=[], curMonth=7, selDate='', defTarget=null, tdOpen=true;
+let rows=[], todoRows=[], curMonth=7, selDate='', defTarget=null, tdOpen=true;
 
 /* ── STORAGE ── */
 const lS=()=>{try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch{return{}}};
 const sS=d=>localStorage.setItem(SK,JSON.stringify(d));
-const lT=()=>{try{return JSON.parse(localStorage.getItem(TK)||'{}')}catch{return{}}};
-const sT=d=>localStorage.setItem(TK,JSON.stringify(d));
+const lTD=()=>{try{return JSON.parse(localStorage.getItem(TDK)||'{}')}catch{return{}}};
+const sTD=d=>localStorage.setItem(TDK,JSON.stringify(d));
 
 /* ── DATE NORMALIZE ── */
 function normDate(s){
@@ -333,15 +338,71 @@ let tt;
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('show'),1800)}
 
 /* ── TODO ── */
-function renderTodo(){
-  const td=lT();
-  document.getElementById('td-body').innerHTML=TODOS.map(t=>`
-    <div class="todo-item">
-      <div class="chk ${td[t.id]?'on':''}" onclick="togTD('${t.id}')">${td[t.id]?'✓':''}</div>
-      <div class="td-txt ${td[t.id]?'done':''}">${t.text}</div>
-    </div>`).join('');
+function parseTodoCSV(t){
+  t=t.replace(/^\uFEFF/,'');
+  const ls=t.trim().split('\n');
+  const hs=ls[0].split(',').map(h=>h.trim().replace(/"/g,''));
+  return ls.slice(1).map(l=>{
+    const vs=l.split(',').map(v=>v.trim().replace(/^"|"$/g,''));
+    const o={};hs.forEach((h,i)=>{o[h]=vs[i]||''});
+    if(o['스료'])o['스료']=normDate(o['스료']);
+    return o;
+  }).filter(r=>r['ID']&&r['할일']);
 }
-function togTD(id){const td=lT();td[id]=!td[id];sT(td);renderTodo()}
+
+function getTodoStatus(row){
+  const td=lTD();
+  if(td[row['ID']]||row['상태']==='완료') return 'done';
+  if(!row['스료']) return 'normal';
+  const today=isoToday(),deadline=row['스료'];
+  if(deadline<today) return 'overdue';
+  if(deadline===today) return 'urgent';
+  const d1=pd(today),d2=pd(deadline);
+  if(d1&&d2&&(d2-d1)/(1000*60*60*24)<=3) return 'urgent';
+  return 'normal';
+}
+
+function getBadge(st,pri){
+  if(st==='overdue') return '<span class="td-badge bd-overdue">기한 초과</span>';
+  if(st==='urgent')  return '<span class="td-badge bd-urgent">즉각 조치</span>';
+  if(pri==='높음')   return '<span class="td-badge bd-high">높음</span>';
+  return '<span class="td-badge bd-normal">보통</span>';
+}
+
+function renderTodo(){
+  const body=document.getElementById('td-body');
+  if(!todoRows.length){
+    body.innerHTML='<div style="padding:14px;text-align:center;font-size:12px;color:#6B7280">투두 목록을 불러오는 중...</div>';
+    return;
+  }
+  const td=lTD();
+  const order={overdue:0,urgent:1,normal:2,done:3};
+  const sorted=[...todoRows].sort((a,b)=>{
+    const sa=getTodoStatus(a),sb=getTodoStatus(b);
+    if(order[sa]!==order[sb])return order[sa]-order[sb];
+    return(a['스료']||'').localeCompare(b['스료']||'');
+  });
+  body.innerHTML=sorted.map(row=>{
+    const isDone=td[row['ID']]||row['상태']==='완료';
+    const st=isDone?'done':getTodoStatus(row);
+    const badge=isDone?'<span class="td-badge bd-ok">완료</span>':getBadge(st,row['우선순위']);
+    const cls=st==='overdue'?'todo-item overdue':st==='urgent'?'todo-item urgent':'todo-item';
+    const ds=row['스료']?'기한: '+row['스료'].slice(5).replace('-','/')+(row['메모']?' · '+row['메모']:''):row['메모']||'';
+    return '<div class="'+cls+'">'+
+      '<div class="chk '+(isDone?'on':'')+'" onclick="togTD(''+row['ID']+'')">'+(isDone?'&#x2713;':'')+
+      '</div><div style="flex:1;display:flex;flex-direction:column;gap:3px">'+
+      '<div class="td-txt '+(isDone?'done':'')+'">'+row['할일']+'</div>'+
+      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+
+      (ds?'<span style="font-size:10px;color:#6B7280">'+ds+'</span>':'')+
+      badge+'</div></div></div>';
+  }).join('');
+}
+
+function togTD(id){
+  const td=lTD();td[id]=!td[id];sTD(td);renderTodo();
+  toast(td[id]?'완료 ✓':'완료 취소');
+}
+
 function toggleTodo(){
   tdOpen=!tdOpen;
   document.getElementById('td-body').style.display=tdOpen?'block':'none';
@@ -511,22 +572,28 @@ function switchMonth(m){
 
 /* ── INIT ── */
 async function init(){
-  renderTodo();
+  renderTodo(); // show loading state
   const today=isoToday();
   selDate=today;
 
-  // detect current month from today
   const tn=pd(today);
   if(tn&&tn.getMonth()+1===8){
     curMonth=8;
     document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',i===1));
   }
 
+  // fetch schedule + todo in parallel
   try{
-    const res=await fetch(CSV);
-    const txt=await res.text();
-    rows=parseCSV(txt);
-    // if today has no data, pick first available date in curMonth
+    const [schedRes, todoRes] = await Promise.all([
+      fetch(CSV),
+      fetch(TODO_CSV)
+    ]);
+    const schedTxt = await schedRes.text();
+    const todoTxt  = await todoRes.text();
+
+    rows = parseCSV(schedTxt);
+    todoRows = parseTodoCSV(todoTxt);
+
     const todayHasData=rows.some(r=>r['날짜']===today);
     if(!todayHasData){
       const first=rows.find(r=>{const d=pd(r['날짜']);return d&&d.getMonth()+1===curMonth});
@@ -535,6 +602,7 @@ async function init(){
     renderCal();
     renderDay(selDate);
     renderStats();
+    renderTodo();
   }catch(e){
     document.getElementById('sched-list').innerHTML=
       '<div class="loading">데이터를 불러올 수 없습니다.<br>잠시 후 새로고침해주세요.</div>';
