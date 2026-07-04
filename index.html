@@ -286,6 +286,21 @@ const sS=d=>localStorage.setItem(SK,JSON.stringify(d));
 const lT=()=>{try{return JSON.parse(localStorage.getItem(TK)||'{}')}catch{return{}}};
 const sT=d=>localStorage.setItem(TK,JSON.stringify(d));
 
+/* ── DATE NORMALIZE ── */
+function normDate(s){
+  if(!s)return'';s=s.trim();
+  // YYYY-M-D or YYYY-MM-DD (handles single digit month/day)
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m)return`${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  // M/D/YYYY (Google Sheets US locale)
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m)return`${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  // YYYY/MM/DD
+  m=s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if(m)return`${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  return s;
+}
+
 /* ── CSV ── */
 function parseLine(l){
   const r=[];let c='',q=false;
@@ -293,17 +308,19 @@ function parseLine(l){
   r.push(c);return r;
 }
 function parseCSV(t){
+  t=t.replace(/^\uFEFF/,''); // BOM 제거
   const ls=t.trim().split('\n');
   const hs=parseLine(ls[0]).map(h=>h.trim().replace(/"/g,''));
   return ls.slice(1).map((l,i)=>{
     const vs=parseLine(l),o={};
     hs.forEach((h,j)=>{o[h]=(vs[j]||'').trim().replace(/^"|"$/g,'')});
+    if(o['날짜'])o['날짜']=normDate(o['날짜']); // 날짜 정규화
     o._i=i;return o;
-  }).filter(r=>r['날짜']);
+  }).filter(r=>r['날짜']&&r['날짜'].length===10);
 }
 
 /* ── DATE ── */
-const pd=s=>{const[y,m,d]=(s||'').split('-');return y?new Date(+y,+m-1,+d):null};
+const pd=s=>{const p=s.split('-');return p.length===3?new Date(+p[0],+p[1]-1,+p[2]):null};
 const fmt=s=>{const d=pd(s);return d?`${d.getMonth()+1}월 ${d.getDate()}일 (${['일','월','화','수','목','금','토'][d.getDay()]})`:'—'};
 const isoToday=()=>{const n=new Date();return`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`};
 const fmtT=(s,e)=>s&&e?`${s} – ${e}`:s||'';
@@ -393,7 +410,8 @@ function renderCal(){
   const grid=document.getElementById('cal-grid');
   const sm=lS();
   const today=isoToday();
-  const year=2026;
+  // 데이터에서 연도 자동 감지
+  const year=rows.length>0?(pd(rows[0]['날짜'])?.getFullYear()||2026):2026;
   const month=curMonth;
   const firstDay=new Date(year,month-1,1).getDay(); // 0=Sun
   const daysInMonth=new Date(year,month,0).getDate();
@@ -402,7 +420,7 @@ function renderCal(){
   const dateMap={};
   rows.filter(r=>{
     const d=pd(r['날짜']);
-    return d&&d.getMonth()+1===month;
+    return d&&d.getMonth()+1===month&&d.getFullYear()===year;
   }).forEach(r=>{
     (dateMap[r['날짜']]=dateMap[r['날짜']]||[]).push(r);
   });
