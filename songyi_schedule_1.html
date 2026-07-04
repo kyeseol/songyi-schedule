@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>송이 방학 스케줄 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --ind:#5B21B6;--ind2:#7C3AED;--ind3:#EDE9FE;
+  --blue:#2563EB;--blue-bg:#EFF6FF;
+  --org:#EA580C;--org-bg:#FFF7ED;
+  --grn:#059669;--grn-bg:#ECFDF5;
+  --pur:#7C3AED;--pur-bg:#F5F3FF;
+  --gry:#64748B;--gry-bg:#F1F5F9;
+  --ok:#16A34A;--ok-bg:#DCFCE7;
+  --skip-bg:#E2E8F0;
+  --def:#D97706;--def-bg:#FEF3C7;
+  --bg:#F5F3FF;--white:#fff;
+  --border:#E2E8F0;--text:#1E1B4B;--text2:#6B7280;
+  --shadow:0 2px 12px rgba(91,33,182,.1);
+  --radius:16px;
+}
+
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(135deg,#5B21B6 0%,#2563EB 100%);padding:18px 18px 0;position:sticky;top:0;z-index:100}
+.hdr-inner{max-width:820px;margin:0 auto}
+.hdr-title{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:12px}
+.hdr-title span{font-size:13px;font-weight:500;color:rgba(255,255,255,.65);margin-left:8px}
+.tabs{display:flex;gap:3px}
+.tab{padding:8px 26px;border:none;border-radius:10px 10px 0 0;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:rgba(255,255,255,.6);background:rgba(255,255,255,.12);transition:.15s}
+.tab.on{background:var(--bg);color:var(--ind)}
+
+/* ── MAIN ── */
+.main{max-width:820px;margin:0 auto;padding:16px 14px 60px}
+
+/* ── SECTION CARD ── */
+.sec{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.sec-hd{padding:14px 16px 0;display:flex;align-items:center;gap:8px}
+.sec-hd h2{font-size:14px;font-weight:700;color:var(--text);flex:1}
+.sec-hd .date-lbl{font-size:13px;font-weight:600;color:var(--ind2);background:var(--ind3);padding:4px 10px;border-radius:20px}
+
+/* ── 일정 SECTION ── */
+.sched-list{padding:10px 10px 12px}
+.act-card{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:9px 10px;border-radius:10px;margin-bottom:4px;border-left:4px solid var(--border);background:var(--gry-bg);transition:.1s}
+.act-card:last-child{margin-bottom:0}
+.act-card.c-고정{border-left-color:var(--blue);background:var(--blue-bg)}
+.act-card.c-유동{border-left-color:var(--org);background:var(--org-bg)}
+.act-card.c-여행{border-left-color:var(--grn);background:var(--grn-bg)}
+.act-card.c-특별{border-left-color:var(--pur);background:var(--pur-bg)}
+.act-card.c-자습{border-left-color:var(--gry);background:var(--gry-bg)}
+.act-card.done{opacity:.45}
+.act-time{font-size:11px;color:var(--text2);min-width:88px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.act-name{flex:1;font-size:13px;font-weight:600;min-width:80px}
+.act-memo{font-size:10px;color:var(--text2);font-weight:400;margin-left:3px}
+.badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.b-고정{background:rgba(37,99,235,.15);color:var(--blue)}
+.b-유동{background:rgba(234,88,12,.15);color:var(--org)}
+.b-여행{background:rgba(5,150,105,.15);color:var(--grn)}
+.b-특별{background:rgba(124,58,237,.15);color:var(--pur)}
+.b-자습{background:rgba(100,116,139,.15);color:var(--gry)}
+.sbts{display:flex;gap:3px;flex-shrink:0}
+.sbt{padding:3px 9px;border:1.5px solid var(--border);border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:var(--white);font-family:'Noto Sans KR',sans-serif;color:var(--text2);transition:.1s;white-space:nowrap}
+.sbt:active{transform:scale(.94)}
+.sbt.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.sbt.skip{background:var(--skip-bg);border-color:#94A3B8;color:var(--gry)}
+.sbt.def{background:var(--def-bg);border-color:var(--def);color:var(--def)}
+.empty-day{text-align:center;padding:20px 0;color:var(--text2);font-size:13px}
+.travel-card{margin:10px;padding:14px;background:var(--grn-bg);border-radius:12px;text-align:center;font-size:13px;font-weight:700;color:var(--grn);border:2px dashed #A7F3D0}
+
+/* ── CALENDAR ── */
+.cal-wrap{padding:12px 12px 14px}
+.cal-nav{display:flex;align-items:center;justify-content:center;margin-bottom:10px;gap:8px}
+.cal-nav span{font-size:14px;font-weight:700;color:var(--text)}
+.dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.dow{text-align:center;font-size:11px;font-weight:700;padding:4px 0;color:var(--text2)}
+.dow.sun{color:#EF4444}
+.dow.sat{color:#3B82F6}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-cell{
+  aspect-ratio:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding:4px 2px 2px;
+  border-radius:10px;cursor:pointer;
+  transition:.12s;position:relative;
+  min-height:44px;
+}
+.cal-cell:hover:not(.empty-cell){background:var(--ind3)}
+.cal-cell.empty-cell{cursor:default}
+.cal-cell.travel-day{background:var(--grn-bg)}
+.cal-cell.selected{background:var(--ind2) !important}
+.cal-cell.selected .cal-num{color:#fff !important;font-weight:800}
+.cal-cell.today-cell .cal-num{
+  background:var(--ind);color:#fff;
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.cal-cell.selected.today-cell .cal-num{background:rgba(255,255,255,.3);color:#fff}
+.cal-num{font-size:12px;font-weight:600;color:var(--text);line-height:1;margin-bottom:3px}
+.cal-num.sun-num{color:#EF4444}
+.cal-num.sat-num{color:#3B82F6}
+.cal-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:32px}
+.dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.dot-고정{background:var(--blue)}
+.dot-유동{background:var(--org)}
+.dot-여행{background:var(--grn)}
+.dot-특별{background:var(--pur)}
+.dot-자습{background:var(--gry)}
+
+/* calendar legend */
+.cal-legend{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px 12px;border-top:1px solid var(--border);margin-top:4px}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2);font-weight:500}
+
+/* ── COUNTERS ── */
+.ctr-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+.ctr-card{background:var(--gry-bg);border-radius:12px;padding:12px 14px}
+.ctr-lbl{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.ctr-val{font-size:22px;font-weight:800;color:var(--ind);margin-bottom:6px;line-height:1}
+.ctr-val.org{color:var(--org)}
+.track{height:6px;background:var(--border);border-radius:3px}
+.fill{height:6px;border-radius:3px;background:var(--ind);transition:width .5s ease}
+.fill.org{background:var(--org)}
+.ctr-sub{font-size:10px;color:var(--text2);margin-top:4px}
+
+/* ── TODO ── */
+.todo-hd{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.todo-hd h2{font-size:13px;font-weight:700;color:var(--text)}
+.todo-arrow{font-size:10px;color:var(--text2)}
+.todo-body{border-top:1px solid var(--border)}
+.todo-item{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.todo-item:last-child{border-bottom:none}
+.chk{width:18px;height:18px;min-width:18px;border:2px solid var(--border);border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;margin-top:1px;transition:.1s}
+.chk.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.td-txt{font-size:12px;color:var(--text);line-height:1.5}
+.td-txt.done{text-decoration:line-through;color:var(--text2)}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--white);border-radius:20px;padding:24px;width:100%;max-width:300px;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.modal h3{font-size:16px;font-weight:800;margin-bottom:6px;color:var(--text)}
+.modal p{font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+.modal input[type=date]{width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-family:'Noto Sans KR',sans-serif;margin-bottom:14px;color:var(--text)}
+.modal input:focus{outline:none;border-color:var(--ind2)}
+.mbts{display:flex;gap:8px}
+.mbt{flex:1;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;border:none;transition:.1s}
+.mbt:active{opacity:.8}
+.mbt.cancel{background:var(--gry-bg);color:var(--text2);border:2px solid var(--border)}
+.mbt.ok{background:var(--ind2);color:#fff}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:rgba(91,33,182,.93);color:#fff;padding:9px 20px;border-radius:24px;font-size:12px;font-weight:600;z-index:300;opacity:0;transition:opacity .2s;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:30px;color:var(--text2);font-size:13px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:480px){
+  .ctr-row{grid-template-columns:1fr 1fr}
+  .cal-cell{min-height:38px}
+  .cal-num{font-size:11px}
+  .dot{width:4px;height:4px}
+}
+@media(max-width:340px){
+  .sbts{flex-wrap:wrap}
+  .cal-cell{min-height:32px;padding:3px 1px 1px}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-title">송이 방학 스케줄 <span>2026</span></div>
+    <div class="tabs">
+      <button class="tab on" onclick="switchMonth(7)">7월</button>
+      <button class="tab" onclick="switchMonth(8)">8월</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- 일정 -->
+  <div class="sec" id="sched-sec">
+    <div class="sec-hd">
+      <h2>일정</h2>
+      <span class="date-lbl" id="sched-lbl">오늘</span>
+    </div>
+    <div class="sched-list" id="sched-list">
+      <div class="loading">불러오는 중...</div>
+    </div>
+  </div>
+
+  <!-- 달력 -->
+  <div class="sec">
+    <div class="cal-wrap">
+      <div class="dow-row">
+        <div class="dow sun">일</div>
+        <div class="dow">월</div>
+        <div class="dow">화</div>
+        <div class="dow">수</div>
+        <div class="dow">목</div>
+        <div class="dow">금</div>
+        <div class="dow sat">토</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="cal-legend">
+      <div class="leg-item"><div class="dot dot-고정"></div>고정수업</div>
+      <div class="leg-item"><div class="dot dot-유동"></div>유동수업</div>
+      <div class="leg-item"><div class="dot dot-여행"></div>여행</div>
+      <div class="leg-item"><div class="dot dot-특별"></div>특별</div>
+      <div class="leg-item"><div class="dot dot-자습"></div>자습</div>
+    </div>
+  </div>
+
+  <!-- 카운터 -->
+  <div class="sec">
+    <div class="ctr-row">
+      <div class="ctr-card">
+        <div class="ctr-lbl">논리정연</div>
+        <div class="ctr-val org" id="c-logic">0 / 16</div>
+        <div class="track"><div class="fill org" id="f-logic" style="width:0%"></div></div>
+        <div class="ctr-sub" id="sub-logic">0회 완료</div>
+      </div>
+      <div class="ctr-card">
+        <div class="ctr-lbl">리드101</div>
+        <div class="ctr-val" id="c-read">0 / 11</div>
+        <div class="track"><div class="fill" id="f-read" style="width:0%"></div></div>
+        <div class="ctr-sub" id="sub-read">0회 완료</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 투두 -->
+  <div class="sec">
+    <div class="todo-hd" onclick="toggleTodo()">
+      <h2>TO-DO</h2>
+      <span class="todo-arrow" id="td-arrow">▼</span>
+    </div>
+    <div class="todo-body" id="td-body"></div>
+  </div>
+
+</div>
+
+<!-- 미루기 Modal -->
+<div class="overlay" id="modal" style="display:none">
+  <div class="modal">
+    <h3>날짜 변경</h3>
+    <p id="modal-name">다른 날로 이동합니다.</p>
+    <input type="date" id="def-date">
+    <div class="mbts">
+      <button class="mbt cancel" onclick="closeModal()">취소</button>
+      <button class="mbt ok" onclick="confirmDefer()">변경</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── CONFIG ── */
+const CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1Cy4kRvzvFMeizNn4BtPLpQ0OEUXNNDnJai-d9C57qX5wJNSv6fR0yBAYcindtQa2CJxplZ-wIVzb/pub?output=csv';
+const GAS='https://script.google.com/macros/s/AKfycbz8mdQ0BB_1yRFHZHLdv-IdJ-jqU2KyIySvXq5Ac55eApBrhQVm0YTP89ETcnak9rx6/exec';
+const SK='songyi_v3'; const TK='songyi_td_v1';
+
+const TODOS=[
+  {id:'t1',text:'미술 선생님께 일요일 수업 시간 변경 최종 확인'},
+  {id:'t2',text:'바이올린 선생님께 8/4 5시 수업 가능 여부 문의'},
+  {id:'t3',text:'스케이트 교실 — 8월 장비 보관 연락'},
+  {id:'t4',text:'국어 학원 시간표 확인 후 목요일 슬롯 검토'},
+  {id:'t5',text:'논리정연 8/6 초과분(1회) 추가 결제 확인'},
+];
+
+/* ── STATE ── */
+let rows=[], curMonth=7, selDate='', defTarget=null, tdOpen=true;
+
+/* ── STORAGE ── */
+const lS=()=>{try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch{return{}}};
+const sS=d=>localStorage.setItem(SK,JSON.stringify(d));
+const lT=()=>{try{return JSON.parse(localStorage.getItem(TK)||'{}')}catch{return{}}};
+const sT=d=>localStorage.setItem(TK,JSON.stringify(d));
+
+/* ── CSV ── */
+function parseLine(l){
+  const r=[];let c='',q=false;
+  for(const ch of l){if(ch==='"'){q=!q}else if(ch===','&&!q){r.push(c);c=''}else c+=ch}
+  r.push(c);return r;
+}
+function parseCSV(t){
+  const ls=t.trim().split('\n');
+  const hs=parseLine(ls[0]).map(h=>h.trim().replace(/"/g,''));
+  return ls.slice(1).map((l,i)=>{
+    const vs=parseLine(l),o={};
+    hs.forEach((h,j)=>{o[h]=(vs[j]||'').trim().replace(/^"|"$/g,'')});
+    o._i=i;return o;
+  }).filter(r=>r['날짜']);
+}
+
+/* ── DATE ── */
+const pd=s=>{const[y,m,d]=(s||'').split('-');return y?new Date(+y,+m-1,+d):null};
+const fmt=s=>{const d=pd(s);return d?`${d.getMonth()+1}월 ${d.getDate()}일 (${['일','월','화','수','목','금','토'][d.getDay()]})`:'—'};
+const isoToday=()=>{const n=new Date();return`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`};
+const fmtT=(s,e)=>s&&e?`${s} – ${e}`:s||'';
+
+/* ── CATEGORY ── */
+function bt(r){const f=r['고정여부']||'';if(f==='여행')return'여행';if(f==='특별')return'특별';if(f==='유동')return'유동';if(f==='자습')return'자습';if(f==='고정')return'고정';return'기타'}
+
+/* ── TOAST ── */
+let tt;
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('show'),1800)}
+
+/* ── TODO ── */
+function renderTodo(){
+  const td=lT();
+  document.getElementById('td-body').innerHTML=TODOS.map(t=>`
+    <div class="todo-item">
+      <div class="chk ${td[t.id]?'on':''}" onclick="togTD('${t.id}')">${td[t.id]?'✓':''}</div>
+      <div class="td-txt ${td[t.id]?'done':''}">${t.text}</div>
+    </div>`).join('');
+}
+function togTD(id){const td=lT();td[id]=!td[id];sT(td);renderTodo()}
+function toggleTodo(){
+  tdOpen=!tdOpen;
+  document.getElementById('td-body').style.display=tdOpen?'block':'none';
+  document.getElementById('td-arrow').textContent=tdOpen?'▲':'▼';
+}
+
+/* ── STATS ── */
+function renderStats(){
+  const sm=lS();let ld=0,rd=0;
+  rows.forEach(r=>{
+    const st=(sm[`${r['날짜']}_${r._i}`]?.status||r['완료여부']||'');
+    if(st==='완료'){
+      if((r['활동명']||'').includes('논리정연'))ld++;
+      if((r['활동명']||'').includes('리드101'))rd++;
+    }
+  });
+  document.getElementById('c-logic').textContent=`${ld} / 16`;
+  document.getElementById('c-read').textContent=`${rd} / 11`;
+  document.getElementById('f-logic').style.width=`${Math.min(100,(ld/16)*100)}%`;
+  document.getElementById('f-read').style.width=`${Math.min(100,(rd/11)*100)}%`;
+  document.getElementById('sub-logic').textContent=`${ld}회 완료`;
+  document.getElementById('sub-read').textContent=`${rd}회 완료`;
+}
+
+/* ── DAILY SCHED ── */
+function renderDay(dateStr){
+  selDate=dateStr;
+  document.getElementById('sched-lbl').textContent=fmt(dateStr);
+  const sm=lS();
+  const dayRows=rows.filter(r=>r['날짜']===dateStr);
+  const list=document.getElementById('sched-list');
+
+  if(!dayRows.length){list.innerHTML='<div class="empty-day">일정이 없는 날이에요.</div>';return}
+
+  const isTravel=dayRows.every(r=>r['고정여부']==='여행');
+  if(isTravel){
+    list.innerHTML=`<div class="travel-card">${dayRows[0]['활동명']||'여행'}</div>`;
+    return;
+  }
+
+  list.innerHTML=dayRows.map(row=>{
+    const key=`${row['날짜']}_${row._i}`;
+    const sd=sm[key];
+    const st=sd?.status||row['완료여부']||'';
+    const dd=sd?.deferDate||'';
+    const cat=bt(row);
+    const time=fmtT(row['시작시간'],row['종료시간']);
+    const name=row['활동명']||'';
+    const memo=row['메모']||'';
+    const defLbl=(st==='미루기'&&dd)?`→${dd.slice(5)}`:'미루기';
+    return`<div class="act-card c-${cat} ${st==='완료'?'done':''}" id="ac-${row._i}">
+      <span class="act-time">${time}</span>
+      <span class="act-name">${name}${memo?`<span class="act-memo">${memo}</span>`:''}</span>
+      <span class="badge b-${cat}">${cat==='기타'?'고정':cat}</span>
+      <div class="sbts">
+        <button class="sbt ${st==='완료'?'ok':''}" onclick="setSt('${row['날짜']}',${row._i},'완료')">완료</button>
+        <button class="sbt ${st==='안함'?'skip':''}" onclick="setSt('${row['날짜']}',${row._i},'안함')">안함</button>
+        <button class="sbt ${st==='미루기'?'def':''}" onclick="openDefer('${row['날짜']}',${row._i},'${name.replace(/'/g,"\\'")}','${dd}')">${defLbl}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── CALENDAR ── */
+function renderCal(){
+  const grid=document.getElementById('cal-grid');
+  const sm=lS();
+  const today=isoToday();
+  const year=2026;
+  const month=curMonth;
+  const firstDay=new Date(year,month-1,1).getDay(); // 0=Sun
+  const daysInMonth=new Date(year,month,0).getDate();
+
+  // build date→rows map for this month
+  const dateMap={};
+  rows.filter(r=>{
+    const d=pd(r['날짜']);
+    return d&&d.getMonth()+1===month;
+  }).forEach(r=>{
+    (dateMap[r['날짜']]=dateMap[r['날짜']]||[]).push(r);
+  });
+
+  let cells='';
+  // empty cells before first day
+  for(let i=0;i<firstDay;i++) cells+=`<div class="cal-cell empty-cell"></div>`;
+
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dr=dateMap[ds]||[];
+    const isTravel=dr.length>0&&dr.every(r=>r['고정여부']==='여행');
+    const isTod=ds===today;
+    const isSel=ds===selDate;
+    const wd=new Date(year,month-1,d).getDay();
+    const isSun=wd===0; const isSat=wd===6;
+
+    // dots - unique categories, max 4
+    const cats=[...new Set(dr.map(r=>bt(r)))].slice(0,4);
+    const dots=cats.map(c=>`<div class="dot dot-${c}"></div>`).join('');
+
+    const numCls=`cal-num ${isSun?'sun-num':isSat?'sat-num':''}`;
+    const cellCls=`cal-cell ${isTravel?'travel-day':''} ${isTod?'today-cell':''} ${isSel?'selected':''}`;
+
+    cells+=`<div class="${cellCls}" onclick="onDateClick('${ds}')">
+      <div class="${numCls}">${d}</div>
+      <div class="cal-dots">${dots}</div>
+    </div>`;
+  }
+  grid.innerHTML=cells;
+}
+
+function onDateClick(ds){
+  selDate=ds;
+  renderCal();
+  renderDay(ds);
+}
+
+/* ── STATUS ── */
+function setSt(date,idx,status){
+  const sm=lS();const key=`${date}_${idx}`;
+  if(sm[key]?.status===status){delete sm[key];sS(sm);pushSheet(idx,'','');toast('초기화')}
+  else{sm[key]={status,date};sS(sm);pushSheet(idx,status,'');toast(status==='완료'?'완료 ✓':'안함 처리')}
+  renderDay(selDate);renderCal();renderStats();
+}
+
+/* ── DEFER ── */
+function openDefer(date,idx,name,curDD){
+  defTarget={date,idx};
+  document.getElementById('modal-name').textContent=`"${name}"을 다른 날로 이동합니다.`;
+  document.getElementById('def-date').value=curDD||date;
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none';defTarget=null}
+function confirmDefer(){
+  if(!defTarget)return;
+  const nd=document.getElementById('def-date').value;
+  if(!nd){alert('날짜를 선택해주세요.');return}
+  const{date,idx}=defTarget;
+  const sm=lS();sm[`${date}_${idx}`]={status:'미루기',date,deferDate:nd};sS(sm);
+  pushSheet(idx,'미루기',nd);closeModal();
+  toast(`→ ${nd.slice(5)}으로 이동`);
+  renderDay(selDate);renderCal();renderStats();
+}
+
+/* ── SHEET PUSH ── */
+function pushSheet(rowIndex,status,deferDate){
+  fetch(GAS,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({action:'updateStatus',rowIndex,status,deferDate})
+  }).catch(()=>{});
+}
+
+/* ── MONTH SWITCH ── */
+function switchMonth(m){
+  curMonth=m;
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',i===0?m===7:m===8));
+  // pick first available date in month or today
+  const today=isoToday();const td=pd(today);
+  if(td&&td.getMonth()+1===m){selDate=today}
+  else{
+    const first=rows.find(r=>{const d=pd(r['날짜']);return d&&d.getMonth()+1===m});
+    selDate=first?first['날짜']:'';
+  }
+  renderCal();
+  if(selDate)renderDay(selDate);
+  else document.getElementById('sched-list').innerHTML='<div class="empty-day">날짜를 선택하세요.</div>';
+}
+
+/* ── INIT ── */
+async function init(){
+  renderTodo();
+  const today=isoToday();
+  selDate=today;
+
+  // detect current month from today
+  const tn=pd(today);
+  if(tn&&tn.getMonth()+1===8){
+    curMonth=8;
+    document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',i===1));
+  }
+
+  try{
+    const res=await fetch(CSV);
+    const txt=await res.text();
+    rows=parseCSV(txt);
+    // if today has no data, pick first available date in curMonth
+    const todayHasData=rows.some(r=>r['날짜']===today);
+    if(!todayHasData){
+      const first=rows.find(r=>{const d=pd(r['날짜']);return d&&d.getMonth()+1===curMonth});
+      if(first)selDate=first['날짜'];
+    }
+    renderCal();
+    renderDay(selDate);
+    renderStats();
+  }catch(e){
+    document.getElementById('sched-list').innerHTML=
+      '<div class="loading">데이터를 불러올 수 없습니다.<br>잠시 후 새로고침해주세요.</div>';
+    console.error(e);
+  }
+}
+
+document.getElementById('modal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal'))closeModal();
+});
+
+init();
+</script>
+</body>
+</html>
