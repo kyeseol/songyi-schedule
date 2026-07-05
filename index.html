@@ -398,8 +398,15 @@ function renderTodo(){
   }).join('');
 }
 
+function pushTodoSheet(id,status){
+  fetch(GAS,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({action:'updateTodoStatus',id,status})
+  }).catch(()=>{});
+}
 function togTD(id){
-  const td=lTD();td[id]=!td[id];sTD(td);renderTodo();
+  const td=lTD();td[id]=!td[id];sTD(td);
+  pushTodoSheet(id, td[id]?'완료':'미완료');
+  renderTodo();
   toast(td[id]?'완료 ✓':'완료 취소');
 }
 
