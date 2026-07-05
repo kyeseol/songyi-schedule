@@ -345,7 +345,7 @@ function parseTodoCSV(t){
   return ls.slice(1).map(l=>{
     const vs=l.split(',').map(v=>v.trim().replace(/^"|"$/g,''));
     const o={};hs.forEach((h,i)=>{o[h]=vs[i]||''});
-    if(o['스료'])o['스료']=normDate(o['스료']);
+    if(o['기한'])o['기한']=normDate(o['기한']);
     return o;
   }).filter(r=>r['ID']&&r['할일']);
 }
@@ -353,8 +353,8 @@ function parseTodoCSV(t){
 function getTodoStatus(row){
   const td=lTD();
   if(td[row['ID']]||row['상태']==='완료') return 'done';
-  if(!row['스료']) return 'normal';
-  const today=isoToday(),deadline=row['스료'];
+  if(!row['기한']) return 'normal';
+  const today=isoToday(),deadline=row['기한'];
   if(deadline<today) return 'overdue';
   if(deadline===today) return 'urgent';
   const d1=pd(today),d2=pd(deadline);
@@ -380,21 +380,21 @@ function renderTodo(){
   const sorted=[...todoRows].sort((a,b)=>{
     const sa=getTodoStatus(a),sb=getTodoStatus(b);
     if(order[sa]!==order[sb])return order[sa]-order[sb];
-    return(a['스료']||'').localeCompare(b['스료']||'');
+    return(a['기한']||'').localeCompare(b['기한']||'');
   });
   body.innerHTML=sorted.map(row=>{
     const isDone=td[row['ID']]||row['상태']==='완료';
     const st=isDone?'done':getTodoStatus(row);
     const badge=isDone?'<span class="td-badge bd-ok">완료</span>':getBadge(st,row['우선순위']);
     const cls=st==='overdue'?'todo-item overdue':st==='urgent'?'todo-item urgent':'todo-item';
-    const ds=row['스료']?'기한: '+row['스료'].slice(5).replace('-','/')+(row['메모']?' · '+row['메모']:''):row['메모']||'';
-    return '<div class="'+cls+'">'+
-      '<div class="chk '+(isDone?'on':'')+'" onclick="togTD(''+row['ID']+'')">'+(isDone?'&#x2713;':'')+
-      '</div><div style="flex:1;display:flex;flex-direction:column;gap:3px">'+
-      '<div class="td-txt '+(isDone?'done':'')+'">'+row['할일']+'</div>'+
-      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+
-      (ds?'<span style="font-size:10px;color:#6B7280">'+ds+'</span>':'')+
-      badge+'</div></div></div>';
+    const ds=row['기한']?'기한: '+row['기한'].slice(5).replace('-','/')+(row['메모']?' · '+row['메모']:''):row['메모']||'';
+    return `<div class="${cls}">
+      <div class="chk ${isDone?'on':''}" onclick="togTD('${row['ID']}')">${isDone?'&#x2713;':''}</div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+      <div class="td-txt ${isDone?'done':''}">${row['할일']}</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      ${ds?`<span style="font-size:10px;color:#6B7280">${ds}</span>`:''}
+      ${badge}</div></div></div>`;
   }).join('');
 }
 
