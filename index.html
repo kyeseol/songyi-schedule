@@ -104,6 +104,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .cal-num{font-size:12px;font-weight:600;color:var(--text);line-height:1;margin-bottom:3px}
 .cal-num.sun-num{color:#EF4444}
 .cal-num.sat-num{color:#3B82F6}
+.cal-num.holiday{color:#EF4444 !important;font-weight:800}
 .cal-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:32px}
 .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .dot-고정{background:var(--blue)}
@@ -290,6 +291,7 @@ const SK='songyi_v3'; const TDK='songyi_td_v2';
 /* ── STATE ── */
 let rows=[], todoRows=[], curMonth=7, selDate='', defTarget=null, tdOpen=true;
 const MONTHS=[7,8,9,10,11,12];
+const HOLIDAYS=new Set(['2026-07-17','2026-08-17','2026-09-24','2026-09-25','2026-10-05','2026-10-09','2026-12-25']);
 
 /* ── STORAGE ── */
 const lS=()=>{try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch{return{}}};
@@ -516,7 +518,7 @@ function renderCal(){
     const cats=[...new Set(dr.map(r=>bt(r)))].slice(0,4);
     const dots=cats.map(c=>`<div class="dot dot-${c}"></div>`).join('');
 
-    const numCls=`cal-num ${isSun?'sun-num':isSat?'sat-num':''}`;
+    const numCls=`cal-num ${isSun?'sun-num':isSat?'sat-num':''} ${HOLIDAYS.has(ds)?'holiday':''}`;
     const cellCls=`cal-cell ${isTravel?'travel-day':''} ${isTod?'today-cell':''} ${isSel?'selected':''}`;
 
     cells+=`<div class="${cellCls}" onclick="onDateClick('${ds}')">
