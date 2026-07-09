@@ -31,8 +31,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .hdr-inner{max-width:820px;margin:0 auto}
 .hdr-title{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:12px}
 .hdr-title span{font-size:13px;font-weight:500;color:rgba(255,255,255,.65);margin-left:8px}
-.tabs{display:flex;gap:3px}
-.tab{padding:8px 26px;border:none;border-radius:10px 10px 0 0;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:rgba(255,255,255,.6);background:rgba(255,255,255,.12);transition:.15s}
+.tabs{display:flex;gap:3px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:8px 16px;border:none;border-radius:10px 10px 0 0;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:rgba(255,255,255,.6);background:rgba(255,255,255,.12);transition:.15s;white-space:nowrap;flex-shrink:0}
 .tab.on{background:var(--bg);color:var(--ind)}
 
 /* ── MAIN ── */
@@ -191,6 +192,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div class="tabs">
       <button class="tab on" onclick="switchMonth(7)">7월</button>
       <button class="tab" onclick="switchMonth(8)">8월</button>
+      <button class="tab" onclick="switchMonth(9)">9월</button>
+      <button class="tab" onclick="switchMonth(10)">10월</button>
+      <button class="tab" onclick="switchMonth(11)">11월</button>
+      <button class="tab" onclick="switchMonth(12)">12월</button>
     </div>
   </div>
 </div>
@@ -284,6 +289,7 @@ const SK='songyi_v3'; const TDK='songyi_td_v2';
 
 /* ── STATE ── */
 let rows=[], todoRows=[], curMonth=7, selDate='', defTarget=null, tdOpen=true;
+const MONTHS=[7,8,9,10,11,12];
 
 /* ── STORAGE ── */
 const lS=()=>{try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch{return{}}};
@@ -564,7 +570,7 @@ function pushSheet(rowIndex,status,deferDate){
 /* ── MONTH SWITCH ── */
 function switchMonth(m){
   curMonth=m;
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',i===0?m===7:m===8));
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',MONTHS[i]===m));
   // pick first available date in month or today
   const today=isoToday();const td=pd(today);
   if(td&&td.getMonth()+1===m){selDate=today}
@@ -584,9 +590,9 @@ async function init(){
   selDate=today;
 
   const tn=pd(today);
-  if(tn&&tn.getMonth()+1===8){
-    curMonth=8;
-    document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',i===1));
+  if(tn&&MONTHS.includes(tn.getMonth()+1)){
+    curMonth=tn.getMonth()+1;
+    document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',MONTHS[i]===curMonth));
   }
 
   // fetch schedule + todo in parallel
