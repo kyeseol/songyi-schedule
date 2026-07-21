@@ -430,7 +430,7 @@ function renderStats(){
   rows.forEach(r=>{
     const st=(sm[`${r['날짜']}_${r._i}`]?.status||r['완료여부']||'');
     if(st==='완료'){
-      if((r['활동명']||'').includes('논리정연'))ld++;
+if((r['활동명']||'').includes('논리정연')){const memo=r['메모']||'';const m=memo.match(/(\d+)\s*회\s*차감/);ld+=m?parseInt(m[1],10):1;}      
       if((r['활동명']||'').includes('리드101'))rd++;
     }
   });
